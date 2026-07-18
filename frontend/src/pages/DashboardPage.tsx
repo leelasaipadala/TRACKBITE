@@ -15,6 +15,7 @@ import {
   TrendingUp,
   ShieldCheck
 } from 'lucide-react';
+import TrackBiteLogo from '../components/TrackBiteLogo';
 import { 
   ResponsiveContainer, 
   PieChart, 
@@ -709,7 +710,7 @@ export default function DashboardPage() {
     const htmlContent = `
       <html>
         <head>
-          <title>NutriVibe Daily Summary - ${new Date().toLocaleDateString()}</title>
+          <title>TRACKBITE Daily Summary - ${new Date().toLocaleDateString()}</title>
           <style>
             body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 30px; color: #111827; background: #f9fafb; }
             .card { background: #ffffff; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
@@ -724,7 +725,7 @@ export default function DashboardPage() {
         </head>
         <body>
           <div class="card">
-            <h1>NutriVibe Daily Fitness Summary</h1>
+            <h1>TRACKBITE Daily Fitness Summary</h1>
             <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
             <p><strong>Goal:</strong> ${goal?.type || 'Healthy Lifestyle'}</p>
             <div class="grid">
@@ -797,11 +798,9 @@ export default function DashboardPage() {
         {/* Navigation header */}
         <header className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 md:p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-600 flex items-center justify-center text-white shadow-lg">
-              <Apple size={20} />
-            </div>
+            <TrackBiteLogo size={32} />
             <div>
-              <h1 className="font-extrabold text-xl text-[var(--text-primary)] leading-none">NutriVibe Dashboard</h1>
+              <h1 className="font-extrabold text-xl text-[var(--text-primary)] leading-none">TRACKBITE Dashboard</h1>
               <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-1 block">Production Ready Hub</span>
             </div>
           </div>

@@ -95,7 +95,7 @@ export default function ReportsPage() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>NutriVibe Progress Summary - ${new Date().toLocaleDateString()}</title>
+          <title>TRACKBITE Progress Summary - ${new Date().toLocaleDateString()}</title>
           <style>
             body { font-family: sans-serif; padding: 30px; color: #f8fafc; background: #0b1220; line-height: 1.6; }
             .header { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
@@ -107,7 +107,7 @@ export default function ReportsPage() {
         </head>
         <body>
           <div class="header">
-            <h1>NutriVibe Progress Summary Report</h1>
+            <h1>TRACKBITE Progress Summary Report</h1>
             <p>Generated on ${new Date().toLocaleDateString()}</p>
           </div>
           <h3>Historical Tracking Log</h3>
@@ -147,7 +147,7 @@ export default function ReportsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `nutrivibe_report_${timeRange}.html`;
+    link.download = `trackbite_report_${timeRange}.html`;
     link.click();
   };
 
@@ -162,7 +162,7 @@ export default function ReportsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `nutrivibe_data_${timeRange}.csv`;
+    link.download = `trackbite_data_${timeRange}.csv`;
     link.click();
   };
 

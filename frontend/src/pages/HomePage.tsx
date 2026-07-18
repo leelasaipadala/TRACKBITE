@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Apple, ShieldCheck, Sparkles, Utensils, Droplets, BarChart3, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Apple, ShieldCheck, Utensils, Droplets, BarChart3, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import TrackBiteLogo from '../components/TrackBiteLogo';
 
 const features = [
   { title: 'Personalized Nutrition', text: 'Daily calorie targets designed around your goals and activity level.', icon: Apple },
@@ -30,11 +31,23 @@ export default function HomePage() {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 dark:bg-emerald-500/5 blur-[120px] animate-blob-1" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] animate-blob-2" />
         <div className="absolute top-[30%] right-[20%] w-[35%] h-[35%] rounded-full bg-lime-500/10 dark:bg-lime-500/5 blur-[100px] animate-blob-1" style={{ animationDelay: '-4s' }} />
+        {/* Sleek digital alignment grid pattern matching reference image */}
+        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.025]" style={{
+          backgroundImage: `
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px)
+          `,
+          backgroundSize: '36px 36px',
+          color: 'rgb(148, 163, 184)'
+        }} />
       </div>
 
       <header className="sticky top-0 z-20 border-b border-emerald-100/70 dark:border-slate-800/40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl relative z-10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <div className="flex items-center gap-2 text-lg font-semibold text-emerald-700 dark:text-emerald-400"><Sparkles size={20} /> NutriVibe Diet Planner</div>
+          <div className="flex items-center gap-2.5 text-lg font-extrabold text-emerald-700 dark:text-emerald-400">
+            <TrackBiteLogo size={28} />
+            <span className="tracking-tight bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">TRACKBITE</span>
+          </div>
           <nav className="hidden gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
             <a href="#features" className="hover:text-emerald-600 dark:hover:text-emerald-400">Features</a>
             <a href="#faq" className="hover:text-emerald-600 dark:hover:text-emerald-400">FAQ</a>
@@ -159,7 +172,7 @@ export default function HomePage() {
 
       <footer className="border-t border-emerald-100/40 dark:border-slate-800/40 bg-white/70 dark:bg-slate-900/70 px-6 py-8 text-sm text-slate-600 dark:text-slate-400 backdrop-blur-xl relative z-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>© 2026 NutriVibe</div>
+          <div>© 2026 TRACKBITE</div>
           <div className="flex gap-4">
             <a href="#features" className="hover:text-emerald-600 dark:hover:text-emerald-400">Features</a>
             <a href="#faq" className="hover:text-emerald-600 dark:hover:text-emerald-400">FAQ</a>

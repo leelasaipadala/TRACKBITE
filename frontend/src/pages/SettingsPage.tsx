@@ -53,7 +53,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('WARNING: Are you absolutely sure you want to permanently delete your NutriVibe account? This action is irreversible.')) {
+    if (!window.confirm('WARNING: Are you absolutely sure you want to permanently delete your TRACKBITE account? This action is irreversible.')) {
       return;
     }
 

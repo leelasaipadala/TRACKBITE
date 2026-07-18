@@ -6,7 +6,6 @@ import {
   LayoutDashboard, 
   Settings, 
   User, 
-  Apple, 
   Menu, 
   X, 
   LogOut, 
@@ -16,6 +15,7 @@ import {
   Droplets
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import TrackBiteLogo from './TrackBiteLogo';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     navigate('/login');
   };
 
-  const currentPathName = menuItems.find(item => item.path === location.pathname)?.name || 'Smart Diet Planner';
+  const currentPathName = menuItems.find(item => item.path === location.pathname)?.name || 'TRACKBITE Calorie Tracker';
 
   return (
     <div className={`min-h-screen flex transition-colors duration-300 relative overflow-hidden ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
@@ -47,6 +47,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 dark:bg-emerald-500/5 blur-[120px] animate-blob-1" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] animate-blob-2" />
         <div className="absolute top-[30%] right-[20%] w-[35%] h-[35%] rounded-full bg-lime-500/10 dark:bg-lime-500/5 blur-[100px] animate-blob-1" style={{ animationDelay: '-4s' }} />
+        {/* Sleek digital alignment grid pattern matching reference image */}
+        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.025]" style={{
+          backgroundImage: `
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px)
+          `,
+          backgroundSize: '36px 36px',
+          color: 'rgb(148, 163, 184)'
+        }} />
       </div>
 
       {/* Desktop Sidebar */}
@@ -55,13 +64,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ? 'bg-slate-900/80 border-slate-800/60' 
           : 'bg-white/80 border-emerald-100/60'
       } backdrop-blur-xl z-20`}>
-        <div className="p-6 flex items-center gap-3 border-b border-emerald-100/20">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-lime-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-            <Apple size={20} />
-          </div>
+        <div className="p-6 flex items-center gap-3 border-b border-emerald-100/10">
+          <TrackBiteLogo size={32} />
           <div>
-            <h1 className="font-semibold text-lg leading-none tracking-tight">NutriVibe</h1>
-            <span className="text-xs text-emerald-500 font-medium tracking-wider uppercase">Diet Planner</span>
+            <h1 className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">TRACKBITE</h1>
+            <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">CALORIE TRACKER</span>
           </div>
         </div>
 
@@ -177,12 +184,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               >
                 <div className="p-6 flex items-center justify-between border-b border-emerald-100/10">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-lime-500 flex items-center justify-center text-white shadow-sm">
-                      <Apple size={18} />
-                    </div>
+                    <TrackBiteLogo size={28} />
                     <div>
-                      <h1 className="font-semibold text-sm leading-none tracking-tight">NutriVibe</h1>
-                      <span className="text-[10px] text-emerald-500 font-medium uppercase tracking-wider">Planner</span>
+                      <h1 className="font-bold text-sm tracking-tight bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">TRACKBITE</h1>
                     </div>
                   </div>
                   <button 

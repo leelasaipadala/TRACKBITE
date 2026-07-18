@@ -3,6 +3,7 @@ import { User, Droplet, Flame, Compass } from 'lucide-react';
 import { useGoal } from '../context/GoalContext';
 import { useAuth } from '../context/AuthContext';
 import { calculateHealthMetrics } from '../services/calculations';
+import api from '../services/api';
 
 export default function ProfilePage() {
   const { goal, saveGoal } = useGoal();
@@ -26,26 +27,50 @@ export default function ProfilePage() {
     hip: 90
   });
 
+  // Fetch direct user details on mount to ensure name and other fields load perfectly
+  useEffect(() => {
+    api.get('/users/me')
+      .then(({ data }) => {
+        if (data) {
+          setForm(prev => ({
+            ...prev,
+            name: data.name || prev.name || '',
+            age: data.age || prev.age || 28,
+            gender: data.gender || prev.gender || 'Female',
+            height: data.height || prev.height || 165,
+            weight: data.weight || prev.weight || 68,
+            goalWeight: data.goalWeight || prev.goalWeight || 60,
+            activityLevel: data.activityLevel || prev.activityLevel || 'Moderately Active',
+            dietPreference: data.dietPreference || prev.dietPreference || 'Vegetarian',
+            medicalConditions: data.medicalConditions || prev.medicalConditions || 'None',
+            allergies: data.allergies || prev.allergies || 'None',
+          }));
+        }
+      })
+      .catch(err => console.warn('Failed to load user in Profile Page mount:', err));
+  }, []);
+
   // Populate form with global GoalContext state on mount or change
   useEffect(() => {
     if (goal) {
-      setForm({
-        name: goal.assessment?.fullName || goal.assessment?.name || user?.name || '',
-        age: goal.assessment?.age || 26,
-        gender: goal.assessment?.gender || 'Male',
-        height: goal.assessment?.height || 175,
-        weight: goal.assessment?.currentWeight || goal.assessment?.weight || goal.weight || 72,
-        goalWeight: goal.assessment?.targetWeight || goal.assessment?.goalWeight || goal.goalWeight || 68,
-        goal: goal.type || 'Weight Loss',
-        activityLevel: goal.activityLevel || 'Moderate',
-        dietPreference: goal.dietPreference || 'Vegetarian',
-        medicalConditions: goal.medicalConditions || 'None',
-        allergies: goal.allergies || 'None',
-        workoutPreference: goal.workoutPreference || 'Home Workout (No Equipment)',
-        waist: goal.assessment?.waist || 80,
-        neck: goal.assessment?.neck || 36,
-        hip: goal.assessment?.hip || 90
-      });
+      setForm(prev => ({
+        ...prev,
+        name: prev.name || goal.assessment?.fullName || goal.assessment?.name || user?.name || '',
+        age: prev.age || goal.assessment?.age || 26,
+        gender: prev.gender || goal.assessment?.gender || 'Male',
+        height: prev.height || goal.assessment?.height || 175,
+        weight: prev.weight || goal.assessment?.currentWeight || goal.assessment?.weight || goal.weight || 72,
+        goalWeight: prev.goalWeight || goal.assessment?.targetWeight || goal.assessment?.goalWeight || goal.goalWeight || 68,
+        goal: prev.goal || goal.type || 'Weight Loss',
+        activityLevel: prev.activityLevel || goal.activityLevel || 'Moderate',
+        dietPreference: prev.dietPreference || goal.dietPreference || 'Vegetarian',
+        medicalConditions: prev.medicalConditions || goal.medicalConditions || 'None',
+        allergies: prev.allergies || goal.allergies || 'None',
+        workoutPreference: prev.workoutPreference || goal.workoutPreference || 'Home Workout (No Equipment)',
+        waist: prev.waist || goal.assessment?.waist || 80,
+        neck: prev.neck || goal.assessment?.neck || 36,
+        hip: prev.hip || goal.assessment?.hip || 90
+      }));
     }
   }, [goal, user]);
 
@@ -59,7 +84,7 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await saveGoal(form);
-      alert('NutriVibe profile details and fitness targets updated successfully!');
+      alert('TRACKBITE profile details and fitness targets updated successfully!');
     } catch (error: any) {
       console.error('Failed to save profile:', error);
       alert('Failed to save profile details: ' + (error.response?.data?.message || error.message));
@@ -274,15 +299,15 @@ export default function ProfilePage() {
                 {/* Detailed Calorie Options Breakdown */}
                 <div className="grid grid-cols-3 gap-2 text-center text-[10px] leading-tight">
                   <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
-                    <span className="text-[7px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Balanced (Maintain)</span>
+                    <span className="text-[7px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Balanced Calories (Maintenance)</span>
                     <span className="block font-black text-[var(--text-primary)] mt-0.5">{liveMetrics.tdee} kcal</span>
                   </div>
                   <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
-                    <span className="text-[7px] uppercase font-bold text-rose-500 tracking-wider">Weight Loss</span>
+                    <span className="text-[7px] uppercase font-bold text-rose-500 tracking-wider">Weight Loss Calories (Calorie Deficit)</span>
                     <span className="block font-black text-rose-500 mt-0.5">{Math.round(Math.max(1200, liveMetrics.tdee - 500))} kcal</span>
                   </div>
                   <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
-                    <span className="text-[7px] uppercase font-bold text-blue-500 tracking-wider">Weight Gain</span>
+                    <span className="text-[7px] uppercase font-bold text-blue-500 tracking-wider">Weight Gain Calories (Calorie Surplus)</span>
                     <span className="block font-black text-blue-500 mt-0.5">{Math.round(liveMetrics.tdee + 400)} kcal</span>
                   </div>
                 </div>

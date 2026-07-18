@@ -701,17 +701,17 @@ export default function AssessmentPage() {
                     </div>
 
                     {/* Calorie Breakdown Row */}
-                    <div className="col-span-2 border-t border-slate-200 dark:border-slate-800 pt-3.5 grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="col-span-2 border-t border-slate-200 dark:border-slate-800 pt-3.5 grid grid-cols-3 gap-2 text-center text-[10px] leading-tight">
                       <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
-                        <span className="text-[8px] uppercase font-bold text-slate-400">Balanced (Maintain)</span>
+                        <span className="text-[7px] uppercase font-bold text-slate-400">Balanced Calories (Maintenance)</span>
                         <p className="text-xs font-black text-slate-700 dark:text-slate-200 mt-0.5">{computedMetrics.tdee} kcal</p>
                       </div>
                       <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
-                        <span className="text-[8px] uppercase font-bold text-rose-500">Weight Loss</span>
+                        <span className="text-[7px] uppercase font-bold text-rose-500">Weight Loss Calories (Calorie Deficit)</span>
                         <p className="text-xs font-black text-rose-500 mt-0.5">{Math.round(Math.max(1200, computedMetrics.tdee - 500))} kcal</p>
                       </div>
                       <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
-                        <span className="text-[8px] uppercase font-bold text-blue-500">Weight Gain</span>
+                        <span className="text-[7px] uppercase font-bold text-blue-500">Weight Gain Calories (Calorie Surplus)</span>
                         <p className="text-xs font-black text-blue-500 mt-0.5">{Math.round(computedMetrics.tdee + 400)} kcal</p>
                       </div>
                     </div>
