@@ -46,11 +46,11 @@ export function GoalProvider({ children }: { children: ReactNode }) {
       gender: goal?.assessment?.gender || 'Male',
       age: goal?.assessment?.age || 26,
       height: goal?.assessment?.height || 175,
-      weight: goal?.assessment?.weight || 72,
+      weight: goal?.assessment?.currentWeight || goal?.assessment?.weight || goal?.weight || 72,
       waist: goal?.assessment?.waist || 80,
       neck: goal?.assessment?.neck || 36,
       hip: goal?.assessment?.hip || 90,
-      activityLevel: goal?.activityLevel || 'Moderate',
+      activityLevel: goal?.assessment?.activityLevel || goal?.activityLevel || 'Moderate',
       goal: goal?.type || 'Healthy Lifestyle'
     };
 

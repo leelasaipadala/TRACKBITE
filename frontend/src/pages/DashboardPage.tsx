@@ -253,13 +253,13 @@ export default function DashboardPage() {
   
   // Directly bind targets to context assessment calculations
   const targetGoal = useMemo(() => ({
-    targetCalories: calculations.dailyCalories,
-    protein: calculations.protein,
-    carbs: calculations.carbs,
-    fat: calculations.fat,
-    fiber: calculations.fiber,
-    water: calculations.waterIntake,
-  }), [calculations]);
+    targetCalories: goal?.targetCalories || calculations.dailyCalories,
+    protein: goal?.protein || calculations.protein,
+    carbs: goal?.carbs || calculations.carbs,
+    fat: goal?.fat || calculations.fat,
+    fiber: goal?.metrics?.fiber || calculations.fiber,
+    water: goal?.waterIntake || calculations.waterIntake,
+  }), [goal, calculations]);
 
   const remaining = useMemo(() => getRemainingMetrics(totals, targetGoal, state.water), [totals, targetGoal, state.water]);
   const consistency = useMemo(() => getConsistencyScore(state, totals, targetGoal), [state, totals, targetGoal]);
