@@ -85,8 +85,13 @@ export function GoalProvider({ children }: { children: ReactNode }) {
       waterIntake: computed.waterIntake,
       goalWeight: form.goalWeight,
       assessment: {
+        fullName: form.name,
+        name: form.name,
         height: form.height,
         weight: form.weight,
+        currentWeight: form.weight,
+        targetWeight: form.goalWeight,
+        goalWeight: form.goalWeight,
         age: form.age,
         gender: form.gender,
         waist: form.waist,

@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { User, Droplet, Flame, Compass } from 'lucide-react';
 import { useGoal } from '../context/GoalContext';
+import { useAuth } from '../context/AuthContext';
 import { calculateHealthMetrics } from '../services/calculations';
 
 export default function ProfilePage() {
   const { goal, saveGoal } = useGoal();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -28,12 +30,12 @@ export default function ProfilePage() {
   useEffect(() => {
     if (goal) {
       setForm({
-        name: goal.assessment?.name || goal.name || '',
+        name: goal.assessment?.fullName || goal.assessment?.name || user?.name || '',
         age: goal.assessment?.age || 26,
         gender: goal.assessment?.gender || 'Male',
         height: goal.assessment?.height || 175,
-        weight: goal.assessment?.weight || 72,
-        goalWeight: goal.goalWeight || 68,
+        weight: goal.assessment?.currentWeight || goal.assessment?.weight || goal.weight || 72,
+        goalWeight: goal.assessment?.targetWeight || goal.assessment?.goalWeight || goal.goalWeight || 68,
         goal: goal.type || 'Weight Loss',
         activityLevel: goal.activityLevel || 'Moderate',
         dietPreference: goal.dietPreference || 'Vegetarian',
@@ -45,7 +47,7 @@ export default function ProfilePage() {
         hip: goal.assessment?.hip || 90
       });
     }
-  }, [goal]);
+  }, [goal, user]);
 
   // Live metrics preview as user types
   const liveMetrics = useMemo(() => {
@@ -267,6 +269,22 @@ export default function ProfilePage() {
                 <div className="flex justify-between items-center bg-[var(--bg-card)] p-2.5 rounded-xl border border-[var(--border-color)]">
                   <span className="text-[var(--text-secondary)] flex items-center gap-1.5"><Flame size={14} className="text-orange-500" /> Daily Target Calories</span>
                   <span className="text-lg font-black text-[var(--text-primary)]">{liveMetrics.dailyCalories} kcal</span>
+                </div>
+
+                {/* Detailed Calorie Options Breakdown */}
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px] leading-tight">
+                  <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
+                    <span className="text-[7px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Balanced (Maintain)</span>
+                    <span className="block font-black text-[var(--text-primary)] mt-0.5">{liveMetrics.tdee} kcal</span>
+                  </div>
+                  <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
+                    <span className="text-[7px] uppercase font-bold text-rose-500 tracking-wider">Weight Loss</span>
+                    <span className="block font-black text-rose-500 mt-0.5">{Math.round(Math.max(1200, liveMetrics.tdee - 500))} kcal</span>
+                  </div>
+                  <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 hover:scale-[1.03] transition-transform duration-200">
+                    <span className="text-[7px] uppercase font-bold text-blue-500 tracking-wider">Weight Gain</span>
+                    <span className="block font-black text-blue-500 mt-0.5">{Math.round(liveMetrics.tdee + 400)} kcal</span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 bg-[var(--bg-card)] p-2 rounded-xl border border-[var(--border-color)] text-center">

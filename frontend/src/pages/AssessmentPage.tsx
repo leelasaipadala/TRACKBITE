@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useGoal } from '../context/GoalContext';
 import api from '../services/api';
 import { 
   calculateDietMetrics, 
@@ -32,6 +33,7 @@ const workoutPreferences = ['Gym', 'Home Workout', 'Walking', 'Running', 'Yoga',
 export default function AssessmentPage() {
   const navigate = useNavigate();
   const { login, user } = useAuth();
+  const { refreshGoal } = useGoal();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +67,73 @@ export default function AssessmentPage() {
   // Allergies & Conditions state (Step 3 & 4)
   const [allergiesText, setAllergiesText] = useState('');
   const [conditionsText, setConditionsText] = useState('');
+
+  const persistToBackend = async (currentForm: AssessmentData, currentGoal: GoalKey) => {
+    try {
+      const parsedAllergies = allergiesText.split(',').map(s => s.trim()).filter(Boolean);
+      const parsedConditions = conditionsText.split(',').map(s => s.trim()).filter(Boolean);
+
+      const finalForm = {
+        ...currentForm,
+        allergies: parsedAllergies.length ? parsedAllergies : ['None'],
+        medicalConditions: parsedConditions.length ? parsedConditions : ['None'],
+      };
+
+      const computed = calculateDietMetrics(finalForm, currentGoal);
+
+      const payload = {
+        type: currentGoal,
+        targetCalories: computed.dailyCalories,
+        protein: computed.protein,
+        carbs: computed.carbs,
+        fat: computed.fat,
+        waterIntake: computed.water,
+        assessment: finalForm,
+        metrics: computed,
+        weeklyPlan: generateWeeklyPlan(finalForm, currentGoal, computed),
+      };
+
+      // 1. Save goal assessment to backend
+      try {
+        await api.post('/goals', payload);
+      } catch (err) {
+        console.warn('Backend goals API failed or not connected, skipping goal save to DB', err);
+      }
+
+      // 2. Update user profile to backend
+      try {
+        await api.put('/users/me', {
+          name: finalForm.fullName,
+          age: finalForm.age,
+          gender: finalForm.gender,
+          height: finalForm.height,
+          weight: finalForm.currentWeight,
+          goalWeight: finalForm.targetWeight,
+          activityLevel: finalForm.activityLevel,
+          dietPreference: finalForm.dietPreference,
+          medicalConditions: finalForm.medicalConditions.join(', '),
+          allergies: finalForm.allergies.join(', '),
+        });
+      } catch (err) {
+        console.warn('Backend user profile update failed or not connected, skipping profile save to DB', err);
+      }
+
+      // 3. Update active AuthContext user
+      if (user) {
+        login({ ...user, name: finalForm.fullName }, localStorage.getItem('token') || '');
+      }
+
+      // 4. Refresh global goals context in memory
+      try {
+        await refreshGoal();
+      } catch (err) {
+        console.warn('Failed to refresh GoalContext in memory', err);
+      }
+
+    } catch (error) {
+      console.warn('Persist to backend error:', error);
+    }
+  };
 
   useEffect(() => {
     api.get('/users/me')
@@ -127,77 +196,26 @@ export default function AssessmentPage() {
     }
   };
 
-  const saveAsDraft = () => {
+  const saveAsDraft = async () => {
     const draftData = {
       form,
       goal,
-      step,
-      morningRoutine,
-      sleepTarget,
-      stepsTarget,
-      workoutMinutesTarget,
-      recoveryFocus,
       mealReminders,
       workoutReminders,
       setupComplete: false
     };
     localStorage.setItem('setup-draft', JSON.stringify(draftData));
     localStorage.setItem('setup-complete', 'false');
+    
+    // Save draft data directly to backend database as well
+    await persistToBackend(form, goal);
     navigate('/dashboard');
   };
 
   const saveAssessment = async () => {
     setLoading(true);
     try {
-      const parsedAllergies = allergiesText.split(',').map(s => s.trim()).filter(Boolean);
-      const parsedConditions = conditionsText.split(',').map(s => s.trim()).filter(Boolean);
-
-      const finalForm = {
-        ...form,
-        allergies: parsedAllergies.length ? parsedAllergies : ['None'],
-        medicalConditions: parsedConditions.length ? parsedConditions : ['None'],
-      };
-
-      const payload = {
-        type: goal,
-        targetCalories: computedMetrics.dailyCalories,
-        protein: computedMetrics.protein,
-        carbs: computedMetrics.carbs,
-        fat: computedMetrics.fat,
-        waterIntake: computedMetrics.water,
-        assessment: finalForm,
-        metrics: computedMetrics,
-        weeklyPlan: generateWeeklyPlan(finalForm, goal, computedMetrics),
-      };
-
-      // Try updating goals
-      try {
-        await api.post('/goals', payload);
-      } catch (err) {
-        console.warn('Backend goals API failed or not connected, skipping goal save to DB', err);
-      }
-
-      // Try updating user profile
-      try {
-        await api.put('/users/me', {
-          name: finalForm.fullName,
-          age: finalForm.age,
-          gender: finalForm.gender,
-          height: finalForm.height,
-          weight: finalForm.currentWeight,
-          goalWeight: finalForm.targetWeight,
-          activityLevel: finalForm.activityLevel,
-          dietPreference: finalForm.dietPreference,
-          medicalConditions: finalForm.medicalConditions.join(', '),
-          allergies: finalForm.allergies.join(', '),
-        });
-      } catch (err) {
-        console.warn('Backend user profile update failed or not connected, skipping profile save to DB', err);
-      }
-
-      if (user) {
-        login({ ...user, name: finalForm.fullName }, localStorage.getItem('token') || '');
-      }
+      await persistToBackend(form, goal);
 
       // Save complete setup status to LocalStorage
       localStorage.setItem('setup-complete', 'true');
@@ -207,7 +225,7 @@ export default function AssessmentPage() {
       const initialTrackingState = {
         entries: [],
         water: 0,
-        weight: finalForm.currentWeight,
+        weight: form.currentWeight,
         workoutMinutes: 0,
         steps: 0,
         sleepHours: sleepTarget,
@@ -670,7 +688,7 @@ export default function AssessmentPage() {
                       <p className="text-lg font-bold text-slate-800 dark:text-white mt-1">{computedMetrics.bmi}</p>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-800 p-3 shadow-sm border border-emerald-50/5">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">Daily Calories</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400">Daily Calories Target</span>
                       <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">{computedMetrics.dailyCalories} kcal</p>
                     </div>
                     <div className="rounded-2xl bg-white dark:bg-slate-800 p-3 shadow-sm border border-emerald-50/5">
@@ -680,6 +698,22 @@ export default function AssessmentPage() {
                     <div className="rounded-2xl bg-white dark:bg-slate-800 p-3 shadow-sm border border-emerald-50/5">
                       <span className="text-[10px] uppercase font-bold text-slate-400">TDEE Intake</span>
                       <p className="text-lg font-bold text-slate-800 dark:text-white mt-1">{computedMetrics.tdee} kcal</p>
+                    </div>
+
+                    {/* Calorie Breakdown Row */}
+                    <div className="col-span-2 border-t border-slate-200 dark:border-slate-800 pt-3.5 grid grid-cols-3 gap-2 text-center text-[10px]">
+                      <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
+                        <span className="text-[8px] uppercase font-bold text-slate-400">Balanced (Maintain)</span>
+                        <p className="text-xs font-black text-slate-700 dark:text-slate-200 mt-0.5">{computedMetrics.tdee} kcal</p>
+                      </div>
+                      <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
+                        <span className="text-[8px] uppercase font-bold text-rose-500">Weight Loss</span>
+                        <p className="text-xs font-black text-rose-500 mt-0.5">{Math.round(Math.max(1200, computedMetrics.tdee - 500))} kcal</p>
+                      </div>
+                      <div className="rounded-xl bg-white dark:bg-slate-800 p-2 shadow-sm border border-emerald-50/5">
+                        <span className="text-[8px] uppercase font-bold text-blue-500">Weight Gain</span>
+                        <p className="text-xs font-black text-blue-500 mt-0.5">{Math.round(computedMetrics.tdee + 400)} kcal</p>
+                      </div>
                     </div>
                   </div>
                   
