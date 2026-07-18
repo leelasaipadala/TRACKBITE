@@ -893,11 +893,15 @@ export default function DashboardPage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-2xl border border-[var(--border-color)] p-4 bg-[var(--bg-card)] text-center">
                         <div className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Current Weight</div>
-                        <div className="text-xl font-black text-[var(--text-primary)] mt-1">{state.weight} kg</div>
+                        <div className="text-xl font-black text-[var(--text-primary)] mt-1">
+                          {goal?.assessment?.currentWeight || goal?.assessment?.weight || user?.weight || state.weight || 72} kg
+                        </div>
                       </div>
                       <div className="rounded-2xl border border-[var(--border-color)] p-4 bg-[var(--bg-card)] text-center">
                         <div className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Target Goal Weight</div>
-                        <div className="text-xl font-black text-emerald-500 mt-1">{goal?.goalWeight || 68} kg</div>
+                        <div className="text-xl font-black text-emerald-500 mt-1">
+                          {goal?.goalWeight || goal?.assessment?.targetWeight || goal?.assessment?.goalWeight || user?.goalWeight || 68} kg
+                        </div>
                       </div>
                     </div>
 

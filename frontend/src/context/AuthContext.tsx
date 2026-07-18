@@ -6,6 +6,8 @@ interface User {
   name: string;
   email: string;
   role: string;
+  weight?: number;
+  goalWeight?: number;
 }
 
 interface AuthContextType {
