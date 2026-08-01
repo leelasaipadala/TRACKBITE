@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Apple, 
@@ -89,6 +89,7 @@ export default function DashboardPage() {
 
   // Search & Filters state
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('Breakfast');
   const [calorieFilter, setCalorieFilter] = useState<number>(650);
   const [proteinFilter, setProteinFilter] = useState<number>(0);
@@ -400,8 +401,8 @@ export default function DashboardPage() {
     list = list.filter(f => !f.category || f.category === selectedMealType);
 
     // Search query keyword
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (deferredSearchQuery) {
+      const query = deferredSearchQuery.toLowerCase();
       list = list.filter((food) => food.name.toLowerCase().includes(query));
     }
 
@@ -439,7 +440,7 @@ export default function DashboardPage() {
 
       return 0;
     });
-  }, [searchQuery, allFoodOptions, selectedMealType, calorieFilter, proteinFilter, carbsFilter, fatFilter, dietFilter, tagFilters, selectedSort, favoriteFoodsList, recentFoodsList]);
+  }, [deferredSearchQuery, allFoodOptions, selectedMealType, calorieFilter, proteinFilter, carbsFilter, fatFilter, dietFilter, tagFilters, selectedSort, favoriteFoodsList, recentFoodsList]);
 
   // Log entry add
   const addLogEntry = async (food: Partial<FoodOption>) => {

@@ -289,23 +289,32 @@ td {
 }
 
 .animate-blob-1 {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   animation: float-blob-1 15s infinite alternate ease-in-out;
 }
 
 .animate-blob-2 {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   animation: float-blob-2 18s infinite alternate ease-in-out;
 }
 
 /* Premium Card Hover Lift Utility */
 .card-hover-lift {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover-lift:hover {
-  transform: translateY(-4px) scale(1.005);
-  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) translateZ(0);
+  box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.12);
 }
 
 .dark .card-hover-lift:hover {
-  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 14px 28px -10px rgba(0, 0, 0, 0.4);
 }
