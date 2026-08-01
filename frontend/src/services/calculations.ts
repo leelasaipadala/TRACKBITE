@@ -107,12 +107,29 @@ export function calculateHealthMetrics(params: {
   const healthyWeightMin = 18.5 * Math.pow(height / 100, 2);
   const healthyWeightMax = 24.9 * Math.pow(height / 100, 2);
 
-  // 8. Daily Calories
+  // 8. Daily Calories Target Calculation
   let dailyCalories = tdee;
-  if (goalLower.includes('loss') || goalLower.includes('deficit') || goalLower.includes('lean')) {
+  if (
+    goalLower.includes('bulk') ||
+    goalLower.includes('surplus') ||
+    (goalLower.includes('gain') && !goalLower.includes('loss'))
+  ) {
+    // Calorie Surplus for Weight Gain, Lean Bulk, Muscle Gain
+    if (goalLower.includes('lean')) {
+      dailyCalories = tdee + 350;
+    } else {
+      dailyCalories = tdee + 400;
+    }
+  } else if (
+    goalLower.includes('loss') ||
+    goalLower.includes('deficit') ||
+    goalLower.includes('cut')
+  ) {
+    // Calorie Deficit for Weight Loss, Fat Loss
     dailyCalories = tdee - 500;
-  } else if (goalLower.includes('gain') || goalLower.includes('bulk') || goalLower.includes('surplus')) {
-    dailyCalories = tdee + 400;
+  } else {
+    // Maintenance for Healthy Lifestyle, Body Recomposition, Maintain Weight
+    dailyCalories = tdee;
   }
   if (dailyCalories < 1200) dailyCalories = 1200;
 

@@ -38,6 +38,7 @@ export function GoalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshGoal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const calculations = useMemo(() => {
@@ -115,6 +116,11 @@ export function GoalProvider({ children }: { children: ReactNode }) {
       if (trackingState) {
         try {
           const parsed = JSON.parse(trackingState);
+          parsed.targetCalories = computed.dailyCalories;
+          parsed.goal = form.goal;
+          parsed.protein = computed.protein;
+          parsed.carbs = computed.carbs;
+          parsed.fat = computed.fat;
           parsed.weight = form.weight;
           parsed.bodyFat = computed.bodyFatPercent;
           parsed.waist = form.waist;

@@ -141,6 +141,7 @@ export default function RecipesPage() {
     loadAllRecipes();
     loadTrendingAndRecommendations();
     loadRecentlyViewed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAllRecipes = async () => {
@@ -172,6 +173,7 @@ export default function RecipesPage() {
   // Trigger search on parameter updates
   useEffect(() => {
     loadAllRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedSort, selectedDifficulty, selectedDiet]);
 
   const loadTrendingAndRecommendations = async () => {
@@ -184,7 +186,7 @@ export default function RecipesPage() {
       setRecommendedRecipes(reco.recipes);
       setCurrentGoalType(reco.goal);
     } catch (err) {
-      console.warn('Backend recommendations failing, showing trending fallbacks');
+      console.warn('Backend recommendations failing, showing trending fallbacks:', err);
     }
   };
 
@@ -224,7 +226,7 @@ export default function RecipesPage() {
         showToast(`Removed ${recipe.title} from Favorites.`, 'info');
       }
     } catch (error) {
-      // Offline toggle fallback
+      console.warn('Backend favorite sync failed, using offline fallback:', error);
       if (favorites.includes(recipe._id)) {
         setFavorites(prev => prev.filter(id => id !== recipe._id));
         showToast('Removed from local favorites.', 'info');
@@ -247,7 +249,7 @@ export default function RecipesPage() {
       setSelectedRecipe(details.recipe);
       setRecipeReviews(details.reviews);
     } catch (err) {
-      console.warn('Could not load extra recipe reviews from server.');
+      console.warn('Could not load extra recipe reviews from server:', err);
       setRecipeReviews([]);
     }
   };
@@ -275,7 +277,7 @@ export default function RecipesPage() {
       try {
         await logRecipeMeal(recipe._id, typeMeal, todayDate);
       } catch (err) {
-        console.warn('Backend logging failed, updating local state only');
+        console.warn('Backend logging failed, updating local state only:', err);
       }
 
       // 2. Load and update localStorage state so Dashboard renders instantly
@@ -309,6 +311,7 @@ export default function RecipesPage() {
       window.dispatchEvent(new Event('nutrition-update'));
       showToast(`Logged ${recipe.title} to ${typeMeal}!`, 'success');
     } catch (err) {
+      console.error('Log meal error:', err);
       showToast('Could not log meal.', 'error');
     }
   };

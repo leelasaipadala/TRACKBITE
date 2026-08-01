@@ -246,6 +246,7 @@ export default function AssessmentPage() {
 
       navigate('/dashboard');
     } catch (error) {
+      console.error('Assessment save failed:', error);
       alert('Assessment could not be saved. Proceeding directly to Dashboard.');
       localStorage.setItem('setup-complete', 'true');
       navigate('/dashboard');

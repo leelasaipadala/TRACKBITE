@@ -83,7 +83,7 @@ const GYM_ROUTINE_EXERCISES = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { goal, calculations, weightLogs, logWeightProgress } = useGoal();
+  const { goal, calculations, weightLogs, logWeightProgress, refreshGoal } = useGoal();
   const [state, setState] = useState<NutritionState>(() => readNutritionState());
   const [activeTab, setActiveTab] = useState<'today' | 'log' | 'nutrition' | 'progress' | 'workouts' | 'coach'>('today');
 
@@ -232,12 +232,15 @@ export default function DashboardPage() {
   // Synchronize state when custom event is fired from other pages
   useEffect(() => {
     fetchDailyLogs();
+    refreshGoal();
     const handleSync = () => {
       setState(readNutritionState());
       fetchDailyLogs();
+      refreshGoal();
     };
     window.addEventListener('nutrition-update', handleSync);
     return () => window.removeEventListener('nutrition-update', handleSync);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
@@ -313,7 +316,7 @@ export default function DashboardPage() {
       recoveryScore: state.sleepHours >= 7 && state.sleepHours <= 9 ? 100 : 75,
       consistencyScore: consistency.score
     };
-  }, [totals, targetGoal, state, scores, consistency]);
+  }, [targetGoal, state, scores, consistency]);
 
   // Intelligent AI coach dynamic lists
   const dynamicCoachAdvises = useMemo(() => {
@@ -702,6 +705,7 @@ export default function DashboardPage() {
       setProgressSteps('');
       setProgressWorkoutMinutes('');
     } catch (err) {
+      console.error('Record progress error:', err);
       showToast('Failed to record progress logs.', 'error');
     }
   };

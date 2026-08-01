@@ -1,6 +1,6 @@
-# Smart Diet Planner
+# TrackBite - Smart AI Nutrition & Macro Planner
 
-A premium, responsive diet planner web app with authentication, meal planning, nutrition tracking, recipes, and admin features.
+A premium, responsive TrackBite nutrition web app with authentication, meal planning, nutrition tracking, recipes, and admin features.
 
 ## Stack
 - Frontend: React, TypeScript, Vite, Tailwind, React Router, Framer Motion

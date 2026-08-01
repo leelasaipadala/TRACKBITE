@@ -142,18 +142,22 @@ export function calculateDietMetrics(assessment: AssessmentData, goal: GoalKey):
     max: Number((Math.max(50, (assessment.height - 100) * 1.1)).toFixed(1)),
   };
 
+  const goalStr = String(goal || '').toLowerCase();
   let dailyCalories = tdee;
-  if (goal === 'weight loss') dailyCalories = Math.round(tdee * 0.8);
-  if (goal === 'fat loss') dailyCalories = Math.round(tdee * 0.85);
-  if (goal === 'body recomposition') dailyCalories = tdee;
-  if (goal === 'muscle gain') dailyCalories = Math.round(tdee * 1.15);
-  if (goal === 'lean bulk') dailyCalories = Math.round(tdee * 1.1);
-  if (goal === 'weight gain') dailyCalories = Math.round(tdee * 1.2);
-  if (goal === 'maintain weight') dailyCalories = tdee;
-  if (goal === 'improve fitness') dailyCalories = Math.round(tdee * 0.95);
-  if (goal === 'healthy lifestyle') dailyCalories = Math.round(tdee * 0.9);
+  if (goalStr.includes('weight loss')) dailyCalories = Math.round(tdee * 0.8);
+  else if (goalStr.includes('fat loss')) dailyCalories = Math.round(tdee * 0.85);
+  else if (goalStr.includes('body recomposition')) dailyCalories = tdee;
+  else if (goalStr.includes('muscle gain')) dailyCalories = Math.round(tdee * 1.15);
+  else if (goalStr.includes('lean bulk')) dailyCalories = Math.round(tdee * 1.12);
+  else if (goalStr.includes('weight gain') || goalStr.includes('bulk')) dailyCalories = Math.round(tdee * 1.2);
+  else if (goalStr.includes('maintain')) dailyCalories = tdee;
+  else if (goalStr.includes('improve fitness')) dailyCalories = Math.round(tdee * 0.95);
+  else if (goalStr.includes('healthy')) dailyCalories = Math.round(tdee * 0.95);
 
-  const proteinTarget = Math.round(Math.max(90, assessment.currentWeight * (goal === 'muscle gain' || goal === 'lean bulk' || goal === 'fat loss' ? 1.8 : goal === 'weight gain' ? 2 : 1.6)));
+  const isSurplusGoal = goalStr.includes('bulk') || goalStr.includes('gain');
+  const isDeficitGoal = goalStr.includes('loss') || goalStr.includes('cut');
+  const proteinMultiplier = isSurplusGoal ? 2.0 : isDeficitGoal ? 1.8 : 1.6;
+  const proteinTarget = Math.round(Math.max(90, assessment.currentWeight * proteinMultiplier));
   const fatCalories = Math.round(dailyCalories * 0.25);
   const proteinCalories = proteinTarget * 4;
   const remainingCalories = dailyCalories - proteinCalories - fatCalories;
