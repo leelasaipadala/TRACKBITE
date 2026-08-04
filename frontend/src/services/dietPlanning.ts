@@ -122,7 +122,14 @@ const activityMultipliers: Record<string, number> = {
   Athlete: 1.9,
 };
 
+const metricsCache = new Map<string, DietMetrics>();
+
 export function calculateDietMetrics(assessment: AssessmentData, goal: GoalKey): DietMetrics {
+  const cacheKey = `${assessment.currentWeight}-${assessment.height}-${assessment.age}-${assessment.gender}-${assessment.activityLevel}-${goal}`;
+  if (metricsCache.has(cacheKey)) {
+    return metricsCache.get(cacheKey)!;
+  }
+
   const heightInMeters = assessment.height / 100;
   const bmi = Number((assessment.currentWeight / (heightInMeters * heightInMeters)).toFixed(1));
 
@@ -166,7 +173,7 @@ export function calculateDietMetrics(assessment: AssessmentData, goal: GoalKey):
   const fiber = goal === 'weight loss' || goal === 'fat loss' ? 35 : goal === 'muscle gain' || goal === 'lean bulk' ? 30 : 28;
   const water = Number((assessment.currentWeight * 0.035 + (assessment.activityLevel === 'Very Active' ? 1.2 : assessment.activityLevel === 'Athlete' ? 1.8 : 0.6)).toFixed(1));
 
-  return {
+  const result: DietMetrics = {
     bmi,
     bmr: Math.round(bmr),
     tdee,
@@ -180,6 +187,9 @@ export function calculateDietMetrics(assessment: AssessmentData, goal: GoalKey):
     fiber,
     water,
   };
+
+  metricsCache.set(cacheKey, result);
+  return result;
 }
 
 function buildMealTemplate(assessment: AssessmentData, goal: GoalKey, mealType: string, dayIndex: number): MealItem {

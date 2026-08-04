@@ -42,6 +42,7 @@ import {
   type RecipeReview, 
   type FetchRecipesParams 
 } from '../services/recipes';
+import { generateAiRecipe } from '../services/geminiAi';
 
 // Hardcoded Categories list matching requirements
 const CATEGORIES = [
@@ -126,6 +127,29 @@ export default function RecipesPage() {
   // Grocery List state
   const [groceryList, setGroceryList] = useState<Record<string, string[]>>({});
   const [showGroceryDrawer, setShowGroceryDrawer] = useState(false);
+
+  // Gemini Flash 3.5 AI Recipe Generator State
+  const [showAiRecipeModal, setShowAiRecipeModal] = useState(false);
+  const [aiIngredientsInput, setAiIngredientsInput] = useState('');
+  const [aiRecipeLoading, setAiRecipeLoading] = useState(false);
+  const [generatedRecipeResult, setGeneratedRecipeResult] = useState<any>(null);
+
+  const handleGenerateGeminiRecipe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiIngredientsInput.trim() || aiRecipeLoading) return;
+    const ingredientsList = aiIngredientsInput.split(',').map(s => s.trim()).filter(Boolean);
+    setAiRecipeLoading(true);
+
+    try {
+      const result = await generateAiRecipe(ingredientsList, selectedDiet || 'balanced', currentGoalType);
+      setGeneratedRecipeResult(result);
+      showToast('Gemini Flash AI recipe generated!', 'success');
+    } catch (err) {
+      showToast('Failed to generate AI recipe', 'error');
+    } finally {
+      setAiRecipeLoading(false);
+    }
+  };
 
   // Success/Error Toasts
   const [toasts, setToasts] = useState<{ id: string; msg: string; type: 'success' | 'error' | 'info' }[]>([]);
@@ -472,8 +496,15 @@ export default function RecipesPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             <button 
+              onClick={() => setShowAiRecipeModal(true)} 
+              className="skeuo-btn-primary flex items-center gap-2"
+            >
+              <Sparkles size={16} />
+              <span>AI Recipe Generator ⚡</span>
+            </button>
+            <button 
               onClick={() => setShowGroceryDrawer(true)} 
-              className="relative flex items-center gap-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-3.5 text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              className="skeuo-btn-secondary flex items-center gap-2 relative"
             >
               <ListPlus size={15} className="text-emerald-600" />
               <span>Grocery Cart</span>
@@ -485,7 +516,7 @@ export default function RecipesPage() {
             </button>
             <button 
               onClick={clearFilters}
-              className="flex items-center gap-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100/10 px-5 py-3.5 text-xs font-bold hover:bg-emerald-100/50 dark:hover:bg-emerald-900/30 transition"
+              className="skeuo-btn-secondary flex items-center gap-1.5"
             >
               <RefreshCw size={14} />
               Reset Config
@@ -1348,6 +1379,89 @@ export default function RecipesPage() {
               )}
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Skeuomorphic Gemini Flash 3.5 AI Recipe Generator Modal */}
+      <AnimatePresence>
+        {showAiRecipeModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="skeuo-card p-6 md:p-8 max-w-lg w-full space-y-5 relative">
+              <button onClick={() => { setShowAiRecipeModal(false); setGeneratedRecipeResult(null); }} className="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+              
+              <div className="flex items-center gap-3 border-b border-slate-300 dark:border-slate-800 pb-3">
+                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-md">
+                  <Sparkles size={22} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">AI Recipe Generator</h3>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-wider">Fast AI Recipe Synthesis</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleGenerateGeminiRecipe} className="space-y-4 text-xs font-semibold">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1.5 font-bold">
+                    Enter Available Ingredients (comma separated):
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Eggs, spinach, avocado, whole wheat bread" 
+                    className="skeuo-input"
+                    value={aiIngredientsInput} 
+                    onChange={(e) => setAiIngredientsInput(e.target.value)} 
+                    required 
+                  />
+                </div>
+
+                <button type="submit" disabled={aiRecipeLoading} className="skeuo-btn-primary w-full py-3.5">
+                  {aiRecipeLoading ? '⚡ AI is Cooking...' : 'Generate AI Recipe ⚡'}
+                </button>
+              </form>
+
+              {/* AI Result Card */}
+              {generatedRecipeResult && (
+                <div className="skeuo-inset p-5 space-y-3.5 animate-fadeIn text-xs">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="skeuo-badge skeuo-badge-success">{generatedRecipeResult.category}</span>
+                      <h4 className="font-extrabold text-base text-slate-900 dark:text-white mt-1">{generatedRecipeResult.title}</h4>
+                      <p className="text-[11px] text-slate-500 font-medium">Prep Time: {generatedRecipeResult.prepTime}</p>
+                    </div>
+                    <span className="text-sm font-black text-emerald-500">{generatedRecipeResult.calories} kcal</span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 font-bold border border-slate-200 dark:border-slate-700">
+                    <div><span className="text-[9px] text-slate-400 block uppercase">Protein</span>{generatedRecipeResult.protein}g</div>
+                    <div><span className="text-[9px] text-slate-400 block uppercase">Carbs</span>{generatedRecipeResult.carbs}g</div>
+                    <div><span className="text-[9px] text-slate-400 block uppercase">Fat</span>{generatedRecipeResult.fat}g</div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block">Ingredients:</span>
+                    <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 text-[11px]">
+                      {generatedRecipeResult.ingredients.map((ing: string, i: number) => (
+                        <li key={i}>{ing}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block">Instructions:</span>
+                    <ol className="list-decimal list-inside text-slate-600 dark:text-slate-400 text-[11px] space-y-1">
+                      {generatedRecipeResult.instructions.map((step: string, i: number) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+                    💡 {generatedRecipeResult.aiInsights}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

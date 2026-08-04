@@ -28,6 +28,7 @@ app.use('/api/meals', require('./src/routes/mealRoutes'));
 app.use('/api/progress', require('./src/routes/progressRoutes'));
 app.use('/api/water', require('./src/routes/waterRoutes'));
 app.use('/api/admin', require('./src/routes/adminRoutes'));
+app.use('/api/ai', require('./src/routes/aiRoutes'));
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });

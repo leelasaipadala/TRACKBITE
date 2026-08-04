@@ -30,6 +30,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useGoal } from '../context/GoalContext';
 import api from '../services/api';
+import { askAiNutritionCoach } from '../services/geminiAi';
 import { 
   readNutritionState, 
   saveNutritionState, 
@@ -155,6 +156,35 @@ export default function DashboardPage() {
   const [progressSteps, setProgressSteps] = useState('');
   const [progressWorkoutMinutes, setProgressWorkoutMinutes] = useState('');
   const [progressRange, setProgressRange] = useState<'weekly' | 'monthly'>('weekly');
+
+  // Gemini Flash 3.5 AI Coach state
+  const [aiQuestion, setAiQuestion] = useState('');
+  const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
+    { role: 'assistant', content: '👋 Hi! I am your AI Nutrition Coach. Ask me any question about your diet, macros, workout timing, or recipes!' }
+  ]);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAskGemini = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuestion.trim() || aiLoading) return;
+    const q = aiQuestion.trim();
+    setAiQuestion('');
+    setAiMessages(prev => [...prev, { role: 'user', content: q }]);
+    setAiLoading(true);
+
+    try {
+      const answer = await askAiNutritionCoach(q, {
+        goal: goal?.type || 'Maintain Weight',
+        calories: targetGoal.targetCalories,
+        protein: targetGoal.protein
+      });
+      setAiMessages(prev => [...prev, { role: 'assistant', content: answer }]);
+    } catch (err) {
+      setAiMessages(prev => [...prev, { role: 'assistant', content: '⚡ High speed response error. Please try again.' }]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'error' }[]>([]);
 
@@ -1574,34 +1604,88 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* TAB 6: REDESIGNED AI COACH DASHBOARD */}
+              {/* TAB 6: SKEUOMORPHIC GEMINI FLASH 3.5 AI COACH DASHBOARD */}
               {activeTab === 'coach' && (
                 <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
                   
-                  {/* Left Column advices list */}
+                  {/* Left Column: Gemini Flash Live AI Console & Advice */}
                   <div className="space-y-6">
-                    {/* Advice Priority Cards list */}
-                    <div className="rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 md:p-8 space-y-5 shadow-xl">
-                      <h3 className="text-lg font-extrabold text-[var(--text-primary)] flex items-center gap-1.5"><Brain size={18} className="text-emerald-500" /> AI Coach Advice & warnings</h3>
+                    {/* Live Gemini Flash AI Interactive Chat */}
+                    <div className="skeuo-card p-6 md:p-8 space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-xl bg-emerald-500 text-white font-black shadow-md">
+                            <Brain size={20} />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">TrackBite AI Nutrition Coach</h3>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-wider">High Speed AI Engine Active</span>
+                          </div>
+                        </div>
+                        <span className="skeuo-badge skeuo-badge-success">AI Active</span>
+                      </div>
+
+                      {/* Chat Messages Log */}
+                      <div className="skeuo-inset p-4 max-h-[320px] overflow-y-auto space-y-3">
+                        {aiMessages.map((msg, idx) => (
+                          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[85%] p-3.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm whitespace-pre-line ${
+                              msg.role === 'user' 
+                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-tr-none' 
+                                : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-tl-none'
+                            }`}>
+                              {msg.content}
+                            </div>
+                          </div>
+                        ))}
+                        {aiLoading && (
+                          <div className="flex justify-start">
+                            <div className="p-3 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-emerald-500 animate-pulse">
+                              ⚡ TrackBite AI is processing...
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Ask Input Form */}
+                      <form onSubmit={handleAskGemini} className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Ask AI Coach: e.g. How much protein should I have after workout?"
+                          className="skeuo-input flex-1"
+                          value={aiQuestion}
+                          onChange={(e) => setAiQuestion(e.target.value)}
+                        />
+                        <button type="submit" disabled={aiLoading} className="skeuo-btn-primary whitespace-nowrap">
+                          Ask AI ⚡
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Priority Advice Cards */}
+                    <div className="skeuo-card p-6 md:p-8 space-y-5">
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Brain size={18} className="text-emerald-500" /> Goal Recommendations & Alerts
+                      </h3>
                       
                       <div className="space-y-3.5">
                         {dynamicCoachAdvises.map((rec, idx) => (
-                          <div key={idx} className="p-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] space-y-3 text-xs">
+                          <div key={idx} className="p-4 rounded-xl skeuo-inset space-y-3 text-xs">
                             <div className="flex justify-between items-center">
-                              <span className={`rounded-lg px-2 py-0.5 text-[8px] font-bold uppercase ${
-                                rec.priority === 'High' ? 'bg-red-500/10 border border-red-500/30 text-red-500' : 'bg-amber-500/10 border border-amber-500/30 text-amber-500'
-                              }`}>{rec.priority} Priority</span>
-                              <span className="text-[8px] text-[var(--text-muted)] font-extrabold uppercase">Confidence {rec.confidence}%</span>
+                              <span className={`skeuo-badge ${rec.priority === 'High' ? 'bg-rose-500/20 text-rose-600 border-rose-400' : 'bg-amber-500/20 text-amber-600 border-amber-400'}`}>
+                                {rec.priority} Priority
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-extrabold uppercase">Confidence {rec.confidence}%</span>
                             </div>
 
                             <div>
-                              <h4 className="font-extrabold text-sm text-[var(--text-primary)]">{rec.title}</h4>
-                              <p className="text-[var(--text-secondary)] font-semibold mt-1 leading-relaxed">{rec.detail}</p>
+                              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{rec.title}</h4>
+                              <p className="text-slate-600 dark:text-slate-300 font-semibold mt-1 leading-relaxed">{rec.detail}</p>
                             </div>
 
-                            <div className="border-t border-[var(--border-color)] pt-2.5 flex justify-between items-center text-[10px] font-bold">
-                              <span className="text-emerald-500">Benefit: {rec.benefit}</span>
-                              <button onClick={() => showToast(`AI Coach Advice executed: ${rec.title}!`, 'success')} className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5">
+                            <div className="border-t border-slate-300 dark:border-slate-700 pt-2.5 flex justify-between items-center text-[10px] font-bold">
+                              <span className="text-emerald-600 dark:text-emerald-400">Benefit: {rec.benefit}</span>
+                              <button onClick={() => showToast(`Executed: ${rec.title}!`, 'success')} className="skeuo-btn-primary text-[10px] py-1 px-3">
                                 {rec.actionLabel}
                               </button>
                             </div>
