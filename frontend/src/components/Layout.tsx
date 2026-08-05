@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TrackBiteLogo from './TrackBiteLogo';
+import DemoBanner from './DemoBanner';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -39,10 +40,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     navigate('/login');
   };
 
-  const currentPathName = menuItems.find(item => item.path === location.pathname)?.name || 'TRACKBITE Skeuo Tracker';
+  const currentPathName = menuItems.find(item => item.path === location.pathname)?.name || 'TRACKBITE AI Platform';
 
   return (
-    <div className={`min-h-screen flex transition-colors duration-300 relative overflow-hidden ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#EAEFF5] text-slate-900'}`}>
+    <div className="min-h-screen flex flex-col">
+      <DemoBanner />
+      <div className={`flex-1 flex transition-colors duration-300 relative overflow-hidden ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-[#EAEFF5] text-slate-900'}`}>
       {/* Skeuomorphic High Performance Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]" style={{
@@ -70,7 +73,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               TRACKBITE
               <Sparkles size={14} className="text-emerald-500" />
             </h1>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold tracking-widest uppercase">SKEUOMORPHIC AI</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold tracking-widest uppercase">INTELLIGENT NUTRITION</span>
           </div>
         </div>
 
@@ -243,6 +246,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+    </div>
     </div>
   );
 }

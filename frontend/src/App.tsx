@@ -13,8 +13,8 @@ import WaterTrackerPage from './pages/WaterTrackerPage';
 import Layout from './components/Layout';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+  const { user, isDemoMode } = useAuth();
+  return (user || isDemoMode) ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 const ProtectedLayout = ({ children }: { children: React.ReactNode }) => {

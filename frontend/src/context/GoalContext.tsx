@@ -16,13 +16,55 @@ interface GoalContextType {
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
+const DEMO_WEIGHT_LOGS = [
+  { date: 'Jul 1', weight: 72.5, bodyFat: 24.2, waist: 76, neck: 34, hip: 98, chest: 90, leanBodyMass: 54.9 },
+  { date: 'Jul 8', weight: 71.8, bodyFat: 23.8, waist: 75.5, neck: 34, hip: 97.5, chest: 89.5, leanBodyMass: 54.7 },
+  { date: 'Jul 15', weight: 71.0, bodyFat: 23.3, waist: 75, neck: 34, hip: 97, chest: 89, leanBodyMass: 54.4 },
+  { date: 'Jul 22', weight: 70.2, bodyFat: 22.8, waist: 74, neck: 34, hip: 96.5, chest: 88.5, leanBodyMass: 54.2 },
+  { date: 'Jul 29', weight: 69.5, bodyFat: 22.3, waist: 73.5, neck: 34, hip: 96, chest: 88, leanBodyMass: 54.0 },
+  { date: 'Aug 5', weight: 68.0, bodyFat: 21.5, waist: 72, neck: 34, hip: 95, chest: 87, leanBodyMass: 53.4 },
+];
+
+const DEMO_GOAL = {
+  type: 'Weight Loss',
+  targetCalories: 2150,
+  protein: 145,
+  carbs: 220,
+  fat: 63,
+  waterIntake: 2500,
+  goalWeight: 62,
+  metrics: {
+    weightHistory: DEMO_WEIGHT_LOGS
+  },
+  assessment: {
+    fullName: 'Alex Morgan',
+    name: 'Alex Morgan',
+    height: 168,
+    weight: 68,
+    currentWeight: 68,
+    targetWeight: 62,
+    goalWeight: 62,
+    age: 26,
+    gender: 'Female',
+    waist: 72,
+    neck: 34,
+    hip: 95,
+    activityLevel: 'Moderate'
+  }
+};
+
 export function GoalProvider({ children }: { children: ReactNode }) {
-  const { user, updateUser } = useAuth();
-  const [goal, setGoal] = useState<any>(null);
-  const [weightLogs, setWeightLogs] = useState<any[]>([]);
+  const { user, isDemoMode, updateUser } = useAuth();
+  const [goal, setGoal] = useState<any>(DEMO_GOAL);
+  const [weightLogs, setWeightLogs] = useState<any[]>(DEMO_WEIGHT_LOGS);
 
   const refreshGoal = async () => {
     if (!user) return;
+    if (isDemoMode || user.id === 'demo-user-id') {
+      setGoal(DEMO_GOAL);
+      setWeightLogs(DEMO_WEIGHT_LOGS);
+      return;
+    }
     try {
       const { data } = await api.get('/goals');
       if (data && data.length > 0) {
@@ -39,7 +81,7 @@ export function GoalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshGoal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, isDemoMode]);
 
   const calculations = useMemo(() => {
     // Default fallback params
@@ -59,6 +101,17 @@ export function GoalProvider({ children }: { children: ReactNode }) {
   }, [goal]);
 
   const saveGoal = async (form: any) => {
+    if (isDemoMode) {
+      // Local preview update in Demo mode
+      setGoal((prev: any) => ({
+        ...prev,
+        type: form.goal,
+        goalWeight: form.goalWeight,
+        assessment: { ...prev?.assessment, ...form }
+      }));
+      return;
+    }
+
     // Put updated profile variables
     const { data: updatedUser } = await api.put('/users/me', form);
     if (updatedUser) {
@@ -166,6 +219,10 @@ export function GoalProvider({ children }: { children: ReactNode }) {
 
     const updatedLogs = [...weightLogs, newLog].slice(-15);
     setWeightLogs(updatedLogs);
+
+    if (isDemoMode) {
+      return;
+    }
 
     if (goal) {
       const { data } = await api.post('/goals', {
